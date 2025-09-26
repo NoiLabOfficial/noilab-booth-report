@@ -11,14 +11,14 @@ export async function POST(req: NextRequest) {
 
     // 세션 + 참가자 나이
     const { data: session, error: sErr } = await supabaseAdmin
-      .from('v2.sessions')
+      .from('sessions')
       .select('id, token, participant_id')
       .eq('id', sessionId)
       .single();
     if (sErr || !session) throw sErr || new Error('세션 없음');
 
     const { data: participant, error: pErr } = await supabaseAdmin
-      .from('v2.participants')
+      .from('participants')
       .select('age')
       .eq('id', session.participant_id)
       .single();
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // 원자료 조회
     const { data: raws, error: rErr } = await supabaseAdmin
-      .from('v2.raw_results')
+      .from('raw_results')
       .select('*')
       .eq('session_id', sessionId);
     if (rErr) throw rErr;
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     const age = participant.age ?? 60;
     let ciPeer = 70;
     const { data: cohort, error: cErr } = await supabaseAdmin
-      .from('v2.age_cohort_stats')
+      .from('age_cohort_stats')
       .select('ci_avg, age_min, age_max')
       .lte('age_min', age)
       .gte('age_max', age)
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     const bAge = brainAge(myCi, ciPeer, age);
 
     // metrics upsert
-    const { error: upErr } = await supabaseAdmin.from('v2.metrics').upsert({
+    const { error: upErr } = await supabaseAdmin.from('metrics').upsert({
       session_id: sessionId,
       memory: m.memory,
       comprehension: m.comprehension,
