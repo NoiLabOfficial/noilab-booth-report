@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       { session_id: sessionId, test_no: 1, accuracy_count: test1.accuracy, avg_reaction_ms: test1.rt },
       { session_id: sessionId, test_no: 2, accuracy_count: test2.accuracy, avg_reaction_ms: test2.rt },
     ];
-    const { error } = await supabaseAdmin.from('v2.raw_results').insert(rows);
+    const { error } = await supabaseAdmin.from('raw_results').insert(rows);
     if (error) throw error;
 
     return NextResponse.json({ ok: true });
