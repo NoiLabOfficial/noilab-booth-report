@@ -10,14 +10,14 @@ export async function POST(req: NextRequest) {
     }
 
     const { data: p, error: pErr } = await supabaseAdmin
-      .from('v2.participants')
+      .from('participants')
       .insert([{ name, age, gender: gender ?? null, mbti: mbti ?? null }])
       .select().single();
     if (pErr) throw pErr;
 
     const token = crypto.randomBytes(24).toString('base64url');
     const { data: s, error: sErr } = await supabaseAdmin
-      .from('v2.sessions')
+      .from('sessions')
       .insert([{ participant_id: p.id, round_no: 1, token }])
       .select().single();
     if (sErr) throw sErr;
