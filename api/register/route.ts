@@ -4,31 +4,26 @@ import crypto from 'node:crypto';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, age, gender, mbti } = body || {};
+    const { name, age, gender, mbti } = await req.json();
     if (!name || !age) {
       return NextResponse.json({ error: 'name, age는 필수' }, { status: 400 });
     }
 
-    // 참가자 upsert (동명이인 대비: name+age+created_at이 다르면 다른 사람으로 취급)
     const { data: p, error: pErr } = await supabaseAdmin
       .from('v2.participants')
       .insert([{ name, age, gender: gender ?? null, mbti: mbti ?? null }])
-      .select()
-      .single();
+      .select().single();
     if (pErr) throw pErr;
 
-    // 세션 + 토큰
-    const token = crypto.randomBytes(24).toString('base64url'); // URL-safe
+    const token = crypto.randomBytes(24).toString('base64url');
     const { data: s, error: sErr } = await supabaseAdmin
       .from('v2.sessions')
       .insert([{ participant_id: p.id, round_no: 1, token }])
-      .select()
-      .single();
+      .select().single();
     if (sErr) throw sErr;
 
-    const reportBase = process.env.REPORT_BASE_URL ?? '';
-    const reportUrl = reportBase ? `${reportBase}/${token}` : `/report/${token}`;
+    const base = process.env.REPORT_BASE_URL ?? '';
+    const reportUrl = base ? `${base}/${token}` : `/report/${token}`;
 
     return NextResponse.json({
       participant: { id: p.id, name: p.name, age: p.age },
